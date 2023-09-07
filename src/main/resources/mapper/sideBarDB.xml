@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.app.taptap.mapper.SidebarMapper">
+    <select id="getTenHotGames" resultType="com.app.taptap.pojo.Game">
+        SELECT game_id as gameID,game_name as gameName,game_score as score,game_profile as profile,game_tag as tag
+        FROM game,rank
+        WHERE game_id=rank_game_id AND rank_type="hot"
+        ORDER BY rank_score DESC
+        LIMIT 10
+    </select>
+    <select id="get20TagsWithGameIDByGoodCount" resultType="com.app.taptap.pojo.TagsResponse">
+        SELECT tag_id as tagID,tag_title as title,tag_good_count as good,tag_scan_count as scanCount,
+                game_bg as background,user_name as username,user_id as userID
+        FROM game,tag,user
+        WHERE game_id=#{gameID} AND game_id=tag_game_id AND tag_user_id=user_id
+        ORDER BY tag_good_count DESC
+        LIMIT 20;
+
+        SELECT j.tag_id as tagID,COUNT(user_id) as UserCount
+        FROM collection right JOIN (SELECT tag_id,tag_good_count
+        FROM game,tag
+        WHERE game_id=#{gameID} AND game_id=tag_game_id
+        ORDER BY tag_good_count DESC
+        LIMIT 20) AS j ON j.tag_id = collection.tag_id
+        GROUP BY j.tag_id
+        ORDER BY j.tag_good_count DESC
+    </select>
+    <select id="get10GamesByGameSearchCount" resultType="com.app.taptap.pojo.Game">
+        SELECT game_id as gameID,game_name as gameName,game_search_count as searchCount
+        FROM game
+        ORDER BY game_search_count DESC
+        LIMIT 10
+    </select>
+    <select id="getSingleGameInfo" resultType="com.app.taptap.pojo.Game">
+        SELECT game_id as gameID,game_name as gameName,game_profile as profile,game_score as score
+        FROM game
+        WHERE game_id=#{gameID}
+    </select>
+</mapper>

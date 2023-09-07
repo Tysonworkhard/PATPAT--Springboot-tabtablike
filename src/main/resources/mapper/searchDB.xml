@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.app.taptap.mapper.SearchMapper">
+    <select id="searchGamesByGameName" resultType="com.app.taptap.pojo.Game">
+        SELECT game_id as gameID,game_name as gameName,game_score as score,game_profile as profile
+        FROM game
+        WHERE game_name=#{gameName}
+    </select>
+    <update id="updateGameSearchCount" parameterType="com.app.taptap.pojo.Game">
+        UPDATE game
+        SET game_search_count=game_search_count+1
+        WHERE game_name=#{gameName}
+    </update>
+</mapper>

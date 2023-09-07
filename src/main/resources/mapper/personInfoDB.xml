@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.app.taptap.mapper.PersonInfoMapper">
+    <select id="getAllUserInfo" resultType="com.app.taptap.pojo.User">
+        SELECT user_id as UID, user_name as username, user_phone_num as phoneNumber,
+            user_email as email,user_profile as profile
+        FROM `user`
+        WHERE user_id= #{UID}
+    </select>
+    <select id="getUserAllGame" resultType="com.app.taptap.pojo.Game">
+        SELECT game_id as gameID
+        FROM user_game
+        WHERE user_id=#{UID}
+    </select>
+    <select id="getUserAllLikeTag" resultType="com.app.taptap.pojo.Tag">
+        SELECT tag_id as tagID
+        FROM collection
+        WHERE user_id=#{UID}
+    </select>
+    <select id="getGameInfo" resultType="com.app.taptap.pojo.Game">
+            SELECT game_id as gameID,game_name as gameName,game_score as score,game_profile as profile
+            FROM game
+            WHERE game_id=#{gameID};
+    </select>
+    <select id="getTagInfo" resultType="com.app.taptap.pojo.Tag">
+            SELECT tag_id as tagID,tag_title as title
+            FROM tag
+            WHERE tag_id=#{tagID};
+    </select>
+    <select id="getUserUIDByPhoneNum" resultType="com.app.taptap.pojo.User">
+        SELECT user_id as UID
+        FROM `user`
+        WHERE user_phone_num= #{phoneNumber}
+    </select>
+    <update id="updateUserInfoByUID" parameterType="com.app.taptap.pojo.PersonInfoChangeRequest">
+        UPDATE `user`
+        SET user_name=#{personInfoChangeRequest.username},user_phone_num=#{personInfoChangeRequest.phoneNumber},
+                        user_email=#{personInfoChangeRequest.email},user_profile=#{personInfoChangeRequest.profile}
+        WHERE user_id=#{UID}
+    </update>
+    <update id="updateUserProfile" parameterType="com.app.taptap.pojo.User">
+        UPDATE user
+        SET user_profile=#{ProfileAddress}
+        WHERE user_id=#{UID}
+    </update>
+
+</mapper>

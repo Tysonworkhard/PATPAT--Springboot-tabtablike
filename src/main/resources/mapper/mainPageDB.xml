@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.app.taptap.mapper.MainPageMapper">
+    <select id="getRecentlyGames" resultType="com.app.taptap.pojo.Game">
+        SELECT game_id as gameID,game_name as gameName,game_profile as profile,game_bg as background,game_score as score,game_tag as tag
+        FROM game
+        ORDER BY game_date DESC
+        LIMIT 3
+    </select>
+    <select id="getAllHotGames" resultType="com.app.taptap.pojo.RankAllGame">
+        SELECT game.game_id as gameID,game.game_profile as profile,game_bg as background,game.game_score as score,game.game_tag as tag,
+                rank.rank_score as rankScore,game.game_name as gameName
+        FROM game,rank
+        WHERE rank.rank_type="hot" and rank.rank_game_id=game.game_id
+    </select>
+    <select id="getAllReservationGames" resultType="com.app.taptap.pojo.RankAllGame">
+        SELECT game.game_id as gameID,game.game_profile as profile,game_bg as background,rank.rank_score as rankScore,
+                game.game_name as gameName,game.game_tag as tag,game.game_score as score
+        FROM game,rank
+        WHERE rank.rank_type="reservation" and rank.rank_game_id=game.game_id
+    </select>
+    <select id="getAllGamesDateAndGames" resultType="com.app.taptap.pojo.Game">
+        SELECT game.game_id as gameID,game.game_profile as profile,game_bg as background,game.game_date as gameDate,game_name as gameName,
+                game.game_tag as tag,game.game_score as score
+        FROM game
+    </select>
+
+
+</mapper>

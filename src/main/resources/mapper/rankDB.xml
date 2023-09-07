@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.app.taptap.mapper.RankMapper">
+    <select id="getAllGamesByType" resultType="com.app.taptap.pojo.RankAllGame">
+        SELECT rank_type as rankType,rank_score as rankScore,
+                rank_game_id as gameID,game_score as score,game_reserve_num as reservationCount
+        FROM rank,game
+        WHERE rank_type=#{type} AND rank_game_id=game.game_id;
+
+        SELECT rank_game_id as gameID,COUNT(user_game.user_id) as userCount
+        FROM rank,user_game
+        WHERE rank_type=#{type} AND rank_game_id=user_game.game_id
+        GROUP BY user_game.game_id
+    </select>
+    <update id="updateAllRankScore" parameterType="com.app.taptap.pojo.RankAllGame">
+        <foreach collection="list" item="rankAllGames">
+            UPDATE rank
+            SET rank_score=#{rankAllGames.rankScore}
+            WHERE rank_type=#{rankAllGames.rankType} AND rank_game_id=#{rankAllGames.gameID};
+        </foreach>
+    </update>
+    <select id="getAllGamesByType_detail" resultType="com.app.taptap.pojo.RankAllGame">
+        SELECT game_id as gameID,game_name as gameName,game_tag as tag,game_score as score,game_bg as background,
+                game_profile as profile,rank_score as rankScore
+        FROM rank,game
+        WHERE rank_type=#{type} AND rank_game_id=game_id
+    </select>
+    <select id="getAllGameID" resultType="com.app.taptap.pojo.Game">
+        SELECT game_id as gameID
+        FROM game
+    </select>
+    <update id="updateGameScoreByAvgTheCommentScoreByGameID" parameterType="com.app.taptap.pojo.Game">
+        UPDATE game
+        SET game_score=(SELECT AVG(comment_score) as average
+        FROM game_comment,`comment`
+        WHERE game_comment.comment_id=comment.comment_id AND game_id=#{gameID}
+        GROUP BY game_id)
+        WHERE game_id=#{gameID}
+    </update>
+    <update id="setNullGameScoreTo5" parameterType="com.app.taptap.pojo.Game">
+        UPDATE game
+        SET game_score="5"
+        WHERE ISNULL(game_score)
+    </update>
+</mapper>

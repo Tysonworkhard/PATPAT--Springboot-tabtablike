@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.app.taptap.mapper.ChatMapper">
+    <select id="getFriends" resultType="com.app.taptap.pojo.UserChatRoom">
+        SELECT friend_user_id as UID,room_id as roomID,user_name as username, user_profile as profile
+        FROM friend,user
+        WHERE friend.user_id=#{UID} AND friend_user_id=user.user_id AND agree=1
+    </select>
+    <select id="searchFriends" resultType="com.app.taptap.pojo.User">
+        SELECT user_id as UID,user_name as username,user_profile as profile
+        FROM `user`
+        WHERE user_name = #{username}
+    </select>
+    <insert id="addFriends_waitAgree">
+        INSERT INTO friend(user_id,friend_user_id,room_id)
+        VALUES(#{UID},#{friendID},#{roomID})
+    </insert>
+    <select id="getFriendApplicationList" resultType="com.app.taptap.pojo.User">
+        SELECT friend_user_id as UID,user_name as username,user_profile as profile
+        FROM friend,`user`
+        WHERE friend_user_id=user.user_id AND friend.user_id=#{UID} AND agree=0
+    </select>
+    <update id="AgreeToBeFriend" parameterType="com.app.taptap.pojo.User">
+        UPDATE friend
+        SET agree=1
+        WHERE user_id=#{UID} AND friend_user_id=#{friendID}
+    </update>
+    <select id="getRoomID" resultType="com.app.taptap.pojo.UserChatRoom">
+        SELECT room_id as roomID
+        FROM friend
+        WHERE user_id=#{UID} AND friend_user_id=#{friendID}
+    </select>
+    <insert id="AgreeToBeFriend_createRelative" parameterType="com.app.taptap.pojo.User">
+            INSERT INTO friend
+            VALUES(#{friendID},#{UID},#{roomID},1)
+    </insert>
+    <delete id="disagreeFriendApplication" parameterType="com.app.taptap.pojo.User">
+        DELETE FROM friend
+        WHERE user_id=#{UID} AND friend_user_id=#{friendID}
+    </delete>
+    <delete id="deleteFriend" parameterType="com.app.taptap.pojo.User">
+        DELETE FROM friend
+        WHERE user_id=#{UID} AND friend_user_id=#{friendID};
+        DELETE FROM friend
+        WHERE friend_user_id=#{UID} AND user_id=#{friendID};
+    </delete>
+    <select id="getFriendID" resultType="com.app.taptap.pojo.User">
+        SELECT friend_user_id as UID
+        FROM friend
+        WHERE user_id=#{UID} AND room_id=#{roomID}
+    </select>
+    <select id="getLatestMessageByRoomID" resultType="com.app.taptap.pojo.RequestMessage">
+        SELECT message_text as content,message_sender_id as senderUID,message_time as time
+        FROM message
+        WHERE room_id=#{roomID}
+        ORDER BY message_time DESC
+        LIMIT 1
+    </select>
+    <insert id="insertMessage" parameterType="com.app.taptap.pojo.RequestMessage">
+        INSERT INTO message
+        VALUES(#{messageID},#{requestMessage.content},#{requestMessage.time},#{requestMessage.senderUID},#{friendID},#{requestMessage.room})
+    </insert>
+    <select id="getAllMessages" resultType="com.app.taptap.pojo.Message">
+        SELECT message_text as content,message_time as time,message_sender_id as sender,user_profile as profile
+        FROM message,`user`
+        WHERE room_id=#{roomID} AND message_sender_id=user_id
+    </select>
+</mapper>

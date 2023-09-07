@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.app.taptap.mapper.RegisterMapper">
+    <insert id="insertUser" parameterType="com.app.taptap.pojo.RegistrationRequest">
+        INSERT into `user`(`user`.user_id,`user`.user_name,`user`.user_phone_num,`user`.user_pwd)
+        VALUES(#{UID},#{username},#{phoneNumber},#{password})
+    </insert>
+    <select id="isUser" resultType="com.app.taptap.pojo.User">
+        SELECT `user`.user_name as username
+        FROM `user`
+        WHERE `user`.user_phone_num=#{phoneNumber}
+    </select>
+    <select id="getNewUser" resultType="com.app.taptap.pojo.User">
+        SELECT user_id as UID, user_name as username, user_phone_num as phoneNumber, user_pwd as password, user_email as email
+        FROM `user`
+        WHERE user_id = #{UID}
+    </select>
+</mapper>

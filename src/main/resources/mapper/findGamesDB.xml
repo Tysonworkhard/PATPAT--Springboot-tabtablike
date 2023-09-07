@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.app.taptap.mapper.FindGamesMapper">
+    <select id="getGameDetailInfo" resultType="com.app.taptap.pojo.Game">
+        SELECT game_id as gameID,game_name as gameName,game_score as score,game_date as gameDate,game_detail as detail,
+                game_tag as tag, game_profile as profile,game_bg as background,game_download as download,
+                game_reserve_num as reservationCount,game_search_count as searchCount
+        FROM game
+        WHERE game_id=#{gameID}
+    </select>
+    <select id="getGameCommentByGameID" resultType="com.app.taptap.pojo.CommentResponse">
+        SELECT game_comment.comment_id as commentID,comment_text as text,comment_time as commentDate,
+                comment_score as score,comment_user_id as UID,user_name as username,user_profile as profile
+        FROM game_comment,`comment`,user
+        WHERE game_id=#{gameID} AND game_comment.comment_id=`comment`.comment_id AND comment_user_id=user_id
+    </select>
+    <insert id="insertCommentByGameID" parameterType="com.app.taptap.pojo.Comment">
+        INSERT INTO comment
+        VALUES(#{commentID},#{commentDate},#{score},#{text},#{UID},#{tagID});
+        INSERT INTO game_comment
+        VALUES(#{gameID},#{commentID})
+    </insert>
+    <select id="isRelative" resultType="com.app.taptap.pojo.User">
+        SELECT user_id as UID
+        FROM user_game
+        WHERE game_id=#{gameID} AND user_id=#{UID}
+    </select>
+    <insert id="insertGameCollection" parameterType="com.app.taptap.pojo.User">
+        INSERT INTO user_game
+        VALUES(#{UID},#{gameID})
+    </insert>
+    <delete id="deleteGameCollection" parameterType="com.app.taptap.pojo.User">
+        DELETE FROM user_game
+        WHERE user_id=#{UID} AND game_id=#{gameID}
+    </delete>
+</mapper>

@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.app.taptap.mapper.CommunityMapper">
+    <select id="selectTagsWithUserCount" resultType="com.app.taptap.pojo.TagsResponse">
+        SELECT tag.tag_id as tagID,tag_title as title,tag_good_count as good,tag_scan_count as scanCount,
+                game_name as gameName,game_profile as profile, game_bg as background,tag_time as time,tag_user_id as userID,
+                user_name as username,user_profile as userProfile
+        FROM tag,game,user
+        WHERE tag_game_id=game_id and tag_user_id=user.user_id;
+
+        SELECT tag_id as tagID,COUNT(user_id) as UserCount
+        FROM collection
+        GROUP BY tag_id
+    </select>
+    <select id="selectTagsByUID" resultType="com.app.taptap.pojo.TagsResponse">
+        SELECT tag_title as title,tag_time as time,game_name as gameName,game_profile as profile, game_bg as background,tag_user_id as userID,
+                user_name as username,user_profile as userProfile,tag.tag_id as tagID
+        FROM collection,tag,game,user
+        WHERE collection.user_id=#{UID} AND collection.tag_id=tag.tag_id AND tag.tag_game_id=game.game_id AND tag_user_id=user.user_id
+    </select>
+    <select id="selectTagsWriteByUser" resultType="com.app.taptap.pojo.TagsResponse">
+        SELECT tag_user_id as userID,tag_id as tagID,tag_title as title,game_name as gameName,user_name as username,
+                user_profile as userProfile,game_profile as profile, game_bg as background,tag_time as time
+        FROM tag,game,user
+        WHERE tag_user_id=#{UID} AND tag.tag_game_id=game.game_id and tag_user_id=user.user_id
+    </select>
+    <insert id="insertTagsByUID" parameterType="com.app.taptap.pojo.Tag">
+        INSERT INTO tag(tag_id,tag_game_id,tag_user_id,tag_time,tag_title,tag_text)
+        VALUES(#{tag.tagID},#{tag.gameID},#{UID},#{tag.time},#{tag.title},#{tag.text});
+<!--        <foreach collection="list" item="tag">-->
+<!--            INSERT INTO tag_pic-->
+<!--            VALUES(#{tag.tagID},#{tag.pictureAddress});-->
+<!--        </foreach>-->
+    </insert>
+    <select id="getAllGames_simple" resultType="com.app.taptap.pojo.Game">
+        SELECT game.game_id as gameID,game.game_profile as profile,game_name as gameName
+        FROM game
+    </select>
+    <insert id="insertCommentsByUID" parameterType="com.app.taptap.pojo.Comment">
+        INSERT INTO comment(comment_id,comment_score,comment_user_id,comment_time,comment_text,comment_tag_id)
+        VALUES(#{comment.commentID},#{comment.score},#{UID},#{comment.commentDate},#{comment.text},#{comment.tagID});
+<!--        <foreach collection="list" item="comment">-->
+<!--            INSERT INTO comment_pic-->
+<!--            VALUES(#{comment.commentID},#{comment.pictureAddress});-->
+<!--        </foreach>-->
+    </insert>
+    <update id="updateScanCount" parameterType="com.app.taptap.pojo.Tag">
+        UPDATE tag
+        SET tag_scan_count=tag_scan_count+1
+        WHERE tag_id=#{TagID}
+    </update>
+    <update id="updateGoodCount" parameterType="com.app.taptap.pojo.Tag">
+        UPDATE tag
+        SET tag_good_count=tag_good_count+1
+        WHERE tag_id=#{TagID}
+    </update>
+    <insert id="updateCollectRelative" parameterType="com.app.taptap.pojo.Tag">
+        INSERT INTO collection(user_id,tag_id)
+        VALUES(#{UID},#{TagID})
+    </insert>
+    <select id="getUserInfo_simple" resultType="com.app.taptap.pojo.User">
+        SELECT user_id as UID,user_profile as profile,user_name as username
+        FROM user
+        WHERE user_id=#{UID}
+    </select>
+
+    <select id="getTagByTagID" resultMap="tagResultMap">
+        SELECT t.tag_id as tagID, t.tag_user_id as userID, t.tag_game_id as gameID, t.tag_title as title,
+        t.tag_text as text, t.tag_time as time, t.tag_good_count as good, t.tag_scan_count as scanCount,
+        tp.tag_pic as pictureAddress
+        FROM tag t
+        LEFT JOIN tag_pic tp ON t.tag_id = tp.tag_id
+        WHERE t.tag_id = #{tagID}
+    </select>
+    <!-- 定义结果映射 -->
+    <resultMap id="tagResultMap" type="com.app.taptap.pojo.TagsResponse">
+        <id property="tagID" column="tagID" />
+        <result property="userID" column="userID" />
+        <result property="gameID" column="gameID" />
+        <result property="title" column="title" />
+        <result property="text" column="text" />
+        <result property="time" column="time" />
+        <result property="good" column="good" />
+        <result property="scanCount" column="scanCount" />
+        <collection property="pictureAddress" ofType="java.lang.String">
+            <result column="pictureAddress" />
+        </collection>
+    </resultMap>
+
+    <select id="getCommentByTagID" resultMap="commentResultMap">
+        SELECT c.comment_id as commentID, c.comment_text as text, c.comment_time as commentDate, c.comment_score as score,
+        c.comment_user_id as UID, cp.comment_pic as pictureAddress
+        FROM `comment` c
+        LEFT JOIN comment_pic cp ON c.comment_id = cp.comment_id
+        WHERE c.comment_tag_id = #{tagID}
+    </select>
+    <!-- 定义结果映射 -->
+    <resultMap id="commentResultMap" type="com.app.taptap.pojo.CommentResponse">
+        <id property="commentID" column="commentID" />
+        <result property="text" column="text" />
+        <result property="commentDate" column="commentDate" />
+        <result property="score" column="score" />
+        <result property="UID" column="UID" />
+        <collection property="pictureAddress" ofType="java.lang.String">
+            <result column="pictureAddress" />
+        </collection>
+    </resultMap>
+
+    <select id="getGoodCount" resultType="com.app.taptap.pojo.Tag">
+        SELECT tag_good_count as good
+        FROM tag
+        WHERE tag_id=#{tagID}
+    </select>
+    <select id="getScanCount" resultType="com.app.taptap.pojo.Tag">
+        SELECT tag_scan_count as scanCount
+        FROM tag
+        WHERE tag_id=#{tagID}
+    </select>
+    <insert id="updateTagPictureAddress" parameterType="com.app.taptap.pojo.Tag">
+            INSERT INTO tag_pic
+            VALUES(#{tagID},#{PictureAddresses})
+    </insert>
+    <update id="updateCommentPictureAddress" parameterType="com.app.taptap.pojo.Comment">
+        INSERT INTO comment_pic
+        VALUES(#{commentID},#{PictureAddresses})
+    </update>
+    <select id="isCollectRelative" resultType="com.app.taptap.pojo.User">
+        SELECT user_id as UID
+        FROM collection
+        WHERE tag_id=#{tagID} AND user_id=#{UID}
+    </select>
+    <delete id="deleteCollectRelative" parameterType="com.app.taptap.pojo.Tag">
+        DELETE FROM collection
+        WHERE user_id=#{UID} AND tag_id=#{tagID}
+    </delete>
+    <select id="isGood" resultType="com.app.taptap.pojo.User">
+        SELECT user_id as UID
+        FROM good
+        WHERE tag_id=#{tagID} AND user_id=#{UID}
+    </select>
+    <insert id="insertGoodRelative" parameterType="com.app.taptap.pojo.Tag">
+        INSERT INTO good
+        VALUES(#{UID},#{tagID})
+    </insert>
+    <delete id="deleteGoodRelative" parameterType="com.app.taptap.pojo.Tag">
+        DELETE FROM good
+        WHERE user_id=#{UID} AND tag_id=#{tagID}
+    </delete>
+    <update id="goodCountDown1" parameterType="com.app.taptap.pojo.Tag">
+        UPDATE tag
+        SET tag_good_count=tag_good_count-1
+        WHERE tag_id=#{tagID}
+    </update>
+</mapper>
